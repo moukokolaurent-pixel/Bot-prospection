@@ -1,0 +1,39 @@
+{
+  "nom_entreprise": "ÉLEC LANGUEDOC",
+  "ville_principale": "Montpellier",
+  "code_postal": "34000",
+  "departement_label": "Hérault (34)",
+  "adresse_complete": "12 rue des Aiguerelles · 34000 Montpellier",
+  "telephone_display": "07 81 23 45 67",
+  "telephone_e164": "+33781234567",
+  "email": "contact@elec-languedoc.example.fr",
+  "note_google": 4.8,
+  "nombre_avis": 38,
+  "photo_hero_url": null,
+  "avis_google": [
+    {
+      "author": "Camille Brunet",
+      "rating": 5,
+      "text": "Intervention le matin même pour une panne de tableau, devis transparent, travail propre. Je recommande sans hésiter pour qui cherche un électricien sérieux à Montpellier.",
+      "role": "Client Google"
+    },
+    {
+      "author": "Antoine Delmas",
+      "rating": 5,
+      "text": "Mise aux normes complète d'un T3 en location. Tout a été chiffré avant signature, photos avant/après, Consuel obtenu sans accroc. Service au-dessus de la moyenne du secteur.",
+      "role": "Client Google"
+    },
+    {
+      "author": "Inès Roussillon",
+      "rating": 5,
+      "text": "Pose d'une borne IRVE Wallbox à la maison + dossier d'aide ADVENIR géré de A à Z. Communication impeccable, délais tenus, prix juste.",
+      "role": "Client Google"
+    },
+    {
+      "author": "Hugo Caraman",
+      "rating": 4,
+      "text": "Domotique partielle (volets + alarme), travail soigné. Une petite reprise à faire après livraison, traitée sans discuter sous garantie. Très pro.",
+      "role": "Client Google"
+    }
+  ]
+}

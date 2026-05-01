@@ -6,6 +6,7 @@ template-source/
 node_modules/
 dist/
 .vite/
+*.tsbuildinfo
 *.log
 .env
 .env.local
