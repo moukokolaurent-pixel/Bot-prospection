@@ -43,7 +43,11 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5173,
-    strictPort: false
+    // Décalé de la valeur Vite par défaut (5173) pour ne pas rentrer en
+    // conflit avec le dashboard local Axelia. Si 5180 est aussi pris,
+    // Vite auto-incrémente (strictPort: false).
+    port: 5180,
+    strictPort: false,
+    open: true
   }
 });
