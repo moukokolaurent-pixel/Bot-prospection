@@ -1,0 +1,17 @@
+# Local working copy of the template source
+# (originals live under "Template électricien-handoff/template-lectricien/project/")
+template-source/
+
+# Node / build artefacts (anticipated for Module 1+)
+node_modules/
+dist/
+.vite/
+*.log
+.env
+.env.local
+.dev.vars
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
