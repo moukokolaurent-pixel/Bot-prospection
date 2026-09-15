@@ -1,6 +1,6 @@
 ---
 name: ui-perso
-description: "Catalogue personnel de ressources UI a utiliser AVEC ui-ux-pro-max. Registres shadcn perso, composants vettes, snippets et references visuelles gardes hors du skill ui-ux-pro-max pour survivre a ses mises a jour. Personal curated UI resource catalog: shadcn registry sources, vetted components, reusable snippets. Use when building or styling an interface, adding a component, looking for an animation / hero effect / particle background / 3D effect, when the user mentions npx shadcn add, a registry URL, VengeanceUI, or asks for 'mes composants', 'mes ressources', 'ma banque de composants', 'ce que j'ai deja'. Also use before writing a custom component from scratch, to check whether a vetted one already exists."
+description: "Catalogue personnel de ressources UI a utiliser AVEC ui-ux-pro-max. Registres shadcn perso, composants vettes, snippets et references visuelles gardes hors du skill ui-ux-pro-max pour survivre a ses mises a jour. Personal curated UI resource catalog: shadcn registry sources, vetted components, reusable snippets. Use when building or styling an interface, adding a component, looking for an animation / hero effect / particle background / 3D effect, when the user mentions npx shadcn add, a registry URL, VengeanceUI, or asks for 'mes composants', 'mes ressources', 'ma banque de composants', 'ce que j'ai deja'. Also use before writing a custom component from scratch, to check whether a vetted one already exists. Use it too when the target is a Claude Design canvas, an artboard or an Artifact rather than a code repo: it says which catalogued resources can and cannot work there."
 ---
 
 # Ressources UI perso
@@ -70,6 +70,18 @@ python3 .claude/skills/ui-perso/scripts/framer-preflight.py "<url>"
 Il dit si le module est chargeable hors de Framer (imports resolus, une seule source de React) ou non. Verdict negatif : ne pas insister, aucun wrapper ne corrige le probleme — reimplementer l'effet. Verdict positif : monter avec `snippets/framer-module-in-next.tsx`.
 
 Depuis une session distante le preflight renvoie toujours `INJOIGNABLE` (framer.com refuse par la politique reseau) : le dire a l'utilisateur et lui demander de le lancer sur sa machine, ne pas conclure a sa place.
+
+## La cible compte autant que le `kind`
+
+Une ressource utilisable dans un projet Next.js ne l'est pas forcement ailleurs.
+
+| Cible | `shadcn-registry-item` | `framer-module` |
+|---|---|---|
+| Projet Next.js / Vite / Astro | installation directe | preflight puis wrapper |
+| Site Framer | non | `Insert > Code component from URL` |
+| Artboard Claude Design / Artifact | **effet a reimplementer** via cdnjs | **impossible** |
+
+Un artboard Claude Design est un Artifact : sa CSP n'autorise les scripts externes que depuis `cdnjs.cloudflare.com`, `cdn.jsdelivr.net/npm/`, `cdn.tailwindcss.com` et `code.jquery.com`, et tout le reste echoue **silencieusement**. `framer.com` en est exclu — ne jamais proposer un `framer-module` pour un artboard. Un item shadcn n'y est pas installable non plus (pas de npm, pas de build), mais ses `dependencies` sont sur cdnjs : lire sa ligne comme une specification et reimplementer l'effet. Details dans `references/claude-design.md`.
 
 Une ligne dont `install` est vide n'a pas de commande : `search.py` affiche alors `Installation : aucune commande — voir Notes`. Ne pas fabriquer un `npx` autour de son `url`.
 
