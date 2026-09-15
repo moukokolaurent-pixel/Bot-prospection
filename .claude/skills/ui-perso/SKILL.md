@@ -59,7 +59,17 @@ La colonne `kind` de `components.csv` decide de la marche a suivre. **Ne jamais 
 | `kind` | Installation | Reference |
 |---|---|---|
 | `shadcn-registry-item` | `npx shadcn@latest add <url>` — le code atterrit dans le depot | ci-dessous |
-| `framer-module` | **Aucune commande shell.** Module ESM distant, insere dans Framer | `references/framer-modules.md` |
+| `framer-module` | **Aucune commande shell.** Dans Framer : Insert > Code component from URL. Dans du code : preflight obligatoire, puis wrapper | `references/framer-modules.md` |
+
+Pour un `framer-module` destine a un projet en code (Next.js, Vite), **toujours lancer le preflight avant de proposer quoi que ce soit** :
+
+```bash
+python3 .claude/skills/ui-perso/scripts/framer-preflight.py "<url>"
+```
+
+Il dit si le module est chargeable hors de Framer (imports resolus, une seule source de React) ou non. Verdict negatif : ne pas insister, aucun wrapper ne corrige le probleme — reimplementer l'effet. Verdict positif : monter avec `snippets/framer-module-in-next.tsx`.
+
+Depuis une session distante le preflight renvoie toujours `INJOIGNABLE` (framer.com refuse par la politique reseau) : le dire a l'utilisateur et lui demander de le lancer sur sa machine, ne pas conclure a sa place.
 
 Une ligne dont `install` est vide n'a pas de commande : `search.py` affiche alors `Installation : aucune commande — voir Notes`. Ne pas fabriquer un `npx` autour de son `url`.
 
@@ -89,13 +99,21 @@ Voir `references/ajouter-une-ressource.md`. Regle courte : une ligne CSV, tags e
 
 ```
 ui-perso/
-├── SKILL.md                      ce fichier
+├── SKILL.md                          ce fichier
+├── install.sh                        lie le catalogue dans ~/.claude/skills (tous projets)
 ├── registry/
-│   ├── sources.csv               registres et librairies entieres
-│   └── components.csv            items precis, vettes
-├── scripts/search.py             moteur de recherche
+│   ├── sources.csv                   registres et librairies entieres
+│   └── components.csv                items precis, vettes
+├── scripts/
+│   ├── search.py                     moteur de recherche
+│   └── framer-preflight.py           un module Framer marche-t-il hors de Framer ?
 ├── references/
-│   ├── ajouter-une-ressource.md  conventions de saisie et re-verification
-│   └── framer-modules.md         modules Framer : pourquoi ce n'est pas un item shadcn
-└── snippets/                     bouts de code reutilisables
+│   ├── ajouter-une-ressource.md      conventions de saisie et re-verification
+│   └── framer-modules.md             les deux chemins pour faire marcher un module Framer
+└── snippets/
+    └── framer-module-in-next.tsx     wrapper client pour module Framer distant
 ```
+
+## Portee
+
+Ce catalogue n'appartient a aucun projet. Il est prevu pour etre lie dans `~/.claude/skills/` via `install.sh`, donc disponible partout. Ne jamais y ecrire quoi que ce soit de specifique a un client ou a un projet : ca va dans le depot du projet, pas ici.

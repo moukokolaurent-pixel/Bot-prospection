@@ -1,60 +1,101 @@
-# Modules Framer — ce qu'ils sont, et ce qu'ils ne sont pas
+# Faire fonctionner un module Framer
 
-Une URL de la forme :
-
-```
-https://framer.com/m/<Nom>-<id>.js@<hash>
-```
-
-n'est **pas** un item de registre shadcn. Aucune commande `npx shadcn add` ne l'installe.
-C'est un module ESM hébergé par Framer.
-
-## Anatomie de l'URL
+Une URL de la forme `https://framer.com/m/<Nom>-<id>.js@<hash>` est un **module ESM hébergé
+par Framer**. Aucune commande `npx shadcn add` ne l'installe.
 
 | Partie | Rôle |
 |---|---|
 | `framer.com/m/` | CDN de modules Framer |
-| `<Nom>-<id>.js` | le module ; l'`id` identifie la publication, pas la version |
+| `<Nom>-<id>.js` | le module ; l'`id` identifie la publication |
 | `@<hash>` | **épingle une version immuable** — sans lui, l'URL suit la dernière version publiée |
 
-Garder le `@<hash>`. Une URL sans hash peut changer de comportement sous vos pieds au prochain
-déploiement de son auteur.
+Garder le `@<hash>`. Sans lui, le comportement peut changer sous vos pieds quand l'auteur republie.
 
-## Usage prévu : dans Framer
+---
 
-`Insert` → `Code component from URL` → coller l'URL. C'est le seul chemin où ces modules sont
-un choix normal : le runtime est déjà là, les property controls s'affichent dans le panneau,
-et la mise à jour est gérée par Framer.
+## Chemin 1 — dans Framer (le cas normal)
 
-## Usage hors Framer (Next.js, Vite, Astro) : possible, rarement raisonnable
+`Insert` → `Code component from URL` → coller l'URL.
 
-Techniquement c'est un import ESM distant. Les quatre problèmes, par ordre de gravité :
+C'est le seul contexte où ces modules sont un choix évident : le runtime est déjà là, les
+**property controls** apparaissent dans le panneau de droite, et les mises à jour sont gérées
+par Framer. Rien d'autre à faire.
 
-1. **Disponibilité.** Votre build dépend d'une URL que vous ne contrôlez pas. Si l'auteur
-   dépublie le module, la page casse en production. Aucun `package-lock.json` ne vous protège.
-2. **CSP.** Un import distant à l'exécution exige `script-src` élargi vers le domaine Framer.
-   Sur un site avec une CSP stricte, c'est un renoncement à la politique, pas un réglage.
-3. **SSR / prerender.** Le module suppose un DOM. En rendu serveur Next.js il faut le charger
-   en `dynamic(..., { ssr: false })`, donc pas de contenu au premier paint — mauvais pour un hero.
-4. **Poids.** Il tire le runtime Framer et `framer-motion` en entier, sans tree-shaking, en
-   doublon de ce que le projet embarque peut-être déjà.
+Si votre site final est un site Framer, arrêtez-vous ici. Tout ce qui suit ne vous concerne pas.
 
-**Alternative à privilégier** : chercher l'effet équivalent dans un registre shadcn du catalogue
-(`search.py --domain source`), où le code atterrit dans le dépôt, versionné et modifiable.
-Un scroll-zoom-reveal se réimplémente en ~40 lignes avec `framer-motion` + `useScroll`.
+---
 
-## Avant de cataloguer un module Framer
+## Chemin 2 — dans du code (Next.js, Vite, Astro)
 
-- Ouvrir l'URL dans un navigateur et lire l'en-tête du fichier : `addPropertyControls`,
-  `ControlType.*` et les `import ... from "framer"` confirment que c'est bien un composant Framer.
+Possible, mais **à vérifier avant d'essayer**. Deux choses peuvent rendre l'opération
+impossible, et aucune n'est visible à l'œil nu.
+
+### Étape 1 — le preflight, obligatoire
+
+```bash
+python3 .claude/skills/ui-perso/scripts/framer-preflight.py "https://framer.com/m/<...>.js@<hash>"
+```
+
+À lancer **depuis votre machine** : les sessions Claude Code distantes ont framer.com refusé
+par leur politique réseau et obtiennent toujours `INJOIGNABLE`.
+
+Le script télécharge le module et répond sur quatre points :
+
+| Contrôle | Pourquoi c'est bloquant |
+|---|---|
+| **Imports nus** (`"react"`, `"framer"`) | Un navigateur ne sait pas les résoudre sans import map. Le module ne charge pas, point. |
+| **Plusieurs sources de React** | Deux instances de React ⇒ `Invalid hook call`, écran vide. |
+| Property controls | Non bloquant, mais inertes hors Framer : il faut lire leur définition pour connaître les props et leurs valeurs par défaut. |
+| Taille / type | Informatif. |
+
+Verdict `NE FONCTIONNERA PAS TEL QUEL` ⇒ **ne pas insister**. Le problème est dans le module,
+aucun wrapper ne le corrige. Réimplémentez l'effet.
+
+Verdict `CHARGEABLE` ⇒ étape 2.
+
+### Étape 2 — le montage
+
+`snippets/framer-module-in-next.tsx` fournit le composant `FramerModule`. Il gère ce qui casse
+en pratique :
+
+- `webpackIgnore` pour que le bundler laisse l'URL tranquille (sinon échec au build) ;
+- rendu client uniquement, jamais en SSR ;
+- un espace réservé pendant le chargement, pour éviter le saut de page (CLS) ;
+- `prefers-reduced-motion` : le module n'est même pas téléchargé ;
+- un état d'échec explicite au lieu d'une page blanche.
+
+### Étape 3 — ce qui reste à votre charge
+
+**CSP.** Un import distant exige `script-src` élargi vers les domaines listés par le preflight.
+Sur un site à CSP stricte, c'est un renoncement à la politique, pas un réglage.
+
+**Le fallback n'est pas une consolation.** C'est ce que verront : les visiteurs en mouvement
+réduit, ceux sous CSP stricte, et *tout le monde* le jour où Framer retire l'URL. Il doit tenir
+debout seul. Un `<div>` vide ne remplit pas ce contrat.
+
+**Vous ne possédez pas ce code.** Aucun `package-lock.json` ne vous protège d'une dépublication.
+C'est la différence de fond avec un item de registre shadcn, dont le code atterrit dans votre
+dépôt et y reste.
+
+---
+
+## Alternative, souvent plus courte qu'on ne croit
+
+Avant d'engager les trois étapes, chercher l'effet dans les registres du catalogue :
+
+```bash
+python3 .claude/skills/ui-perso/scripts/search.py --domain source
+```
+
+Un scroll-zoom-reveal se réimplémente en une quarantaine de lignes avec `framer-motion` et
+`useScroll`. Le code est dans votre dépôt, versionné, modifiable, et ne dépend de personne.
+
+---
+
+## Avant de cataloguer un nouveau module Framer
+
+- Lancer le preflight et **coller son verdict dans le champ `notes`**.
 - Chercher la licence sur la page marketplace de l'auteur. **Il n'y a pas de licence globale
-  Framer** : c'est module par module, et beaucoup n'en déclarent aucune.
-- Renseigner `license` avec ce qui est réellement écrit, ou `a verifier`. Ne jamais supposer MIT.
-- Laisser `last_verified` **vide** tant que le contenu n'a pas été lu. `search.py` affiche alors
-  `Verifie le : JAMAIS`, ce qui est le comportement voulu.
-
-## Note sur cet environnement
-
-`framer.com` et `framerusercontent.com` sont refusés par la politique réseau des sessions
-Claude Code distantes (403 au CONNECT du proxy). Les modules Framer ne peuvent donc pas être
-vérifiés depuis une session distante — seulement depuis votre machine.
+  Framer** : c'est module par module, et beaucoup n'en déclarent aucune. Ne jamais supposer MIT.
+- Renseigner `last_verified` **uniquement** après avoir lu le contenu. Tant qu'il est vide,
+  `search.py` affiche `Verifie le : JAMAIS`, ce qui est le comportement voulu.

@@ -15,8 +15,15 @@ import argparse
 import csv
 import json
 import re
+import signal
 import sys
 from pathlib import Path
+
+# `search.py --list | head` ferme le tuyau avant la fin de l'ecriture. Sans ca,
+# Python remonte un BrokenPipeError au lieu de s'arreter silencieusement comme
+# tout outil en ligne de commande.
+if hasattr(signal, "SIGPIPE"):
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 REGISTRY_DIR = Path(__file__).resolve().parent.parent / "registry"
 
