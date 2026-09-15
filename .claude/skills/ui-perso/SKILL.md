@@ -52,7 +52,20 @@ Deux domaines :
 
 Si la recherche ne renvoie rien, **ne pas inventer de commande d'installation**. Soit lire l'`index_url` du registre concerne pour trouver le nom exact de l'item, soit dire que la ressource n'est pas au catalogue.
 
-## Installer une ressource
+## Toutes les ressources ne s'installent pas pareil
+
+La colonne `kind` de `components.csv` decide de la marche a suivre. **Ne jamais appliquer la procedure d'un `kind` a un autre.**
+
+| `kind` | Installation | Reference |
+|---|---|---|
+| `shadcn-registry-item` | `npx shadcn@latest add <url>` — le code atterrit dans le depot | ci-dessous |
+| `framer-module` | **Aucune commande shell.** Module ESM distant, insere dans Framer | `references/framer-modules.md` |
+
+Une ligne dont `install` est vide n'a pas de commande : `search.py` affiche alors `Installation : aucune commande — voir Notes`. Ne pas fabriquer un `npx` autour de son `url`.
+
+Une ligne dont `last_verified` est vide s'affiche `Verifie le : JAMAIS`. Le contenu n'a pas ete lu : le signaler avant de proposer la ressource, ne pas la presenter comme validee.
+
+## Installer un item de registre shadcn
 
 1. **Lire le JSON avant de l'installer.** `npx shadcn add <url>` ecrit du code arbitraire dans le projet et ajoute des dependances npm. `curl -sS <url> | head -60` suffit a voir le `type`, les `dependencies`, et le `target` du fichier.
 2. Verifier que les `dependencies` sont acceptables. `three` + `gsap` pour un seul hero, c'est ~150 ko gzip ajoutes au bundle.
@@ -81,6 +94,8 @@ ui-perso/
 │   ├── sources.csv               registres et librairies entieres
 │   └── components.csv            items precis, vettes
 ├── scripts/search.py             moteur de recherche
-├── references/                   notes longues par ressource
+├── references/
+│   ├── ajouter-une-ressource.md  conventions de saisie et re-verification
+│   └── framer-modules.md         modules Framer : pourquoi ce n'est pas un item shadcn
 └── snippets/                     bouts de code reutilisables
 ```

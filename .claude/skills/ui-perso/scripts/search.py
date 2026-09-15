@@ -33,8 +33,12 @@ WEIGHTS = {
     "category": 3,
     "kind": 2,
     "stack": 2,
+    "source_id": 2,
     "notes": 1,
 }
+
+# Premiers mots qui font d'une chaine une vraie commande shell (cf. render_source).
+SHELL_COMMANDS = {"npx", "npm", "pnpm", "yarn", "bun", "bunx", "deno", "git", "curl", "wget", "pip", "python3"}
 
 # Accents -> ASCII, pour que "particules" matche "particules" comme "particules".
 ACCENTS = str.maketrans("àâäáãçéèêëíìîïñóòôöõúùûüýÿ", "aaaaaceeeeiiiinooooouuuuyy")
@@ -91,24 +95,32 @@ def matches_filters(row, stack, tag, category):
 
 
 def render_component(row):
+    kind = row.get("kind") or "?"
     lines = [
         f"### {row['name']}  `{row['id']}`",
-        f"- **Source :** {row.get('source_id') or '—'}"
+        f"- **Type :** {kind}"
+        f" | **Source :** {row.get('source_id') or '—'}"
         f" | **Categorie :** {row.get('category') or '—'}"
         f" | **Licence :** {row.get('license') or 'a verifier'}",
         f"- **Stack :** {', '.join(multi(row, 'stack')) or '—'}",
     ]
     deps = multi(row, "dependencies")
     if deps:
-        lines.append(f"- **Dependances npm :** {', '.join(deps)}")
+        lines.append(f"- **Dependances :** {', '.join(deps)}")
     if row.get("install"):
         lines.append(f"- **Installer :**\n```bash\n{row['install']}\n```")
+    else:
+        # Pas de commande shell : ne jamais laisser croire qu'il y en a une.
+        lines.append(f"- **Installation :** aucune commande — voir Notes. URL : {row.get('url') or '—'}")
     if row.get("tags"):
         lines.append(f"- **Tags :** {', '.join(multi(row, 'tags'))}")
     if row.get("notes"):
         lines.append(f"- **Notes :** {row['notes']}")
-    if row.get("last_verified"):
-        lines.append(f"- **Verifie le :** {row['last_verified']}")
+    lines.append(
+        f"- **Verifie le :** {row['last_verified']}"
+        if row.get("last_verified")
+        else "- **Verifie le :** JAMAIS — ressource non verifiee, controler avant usage"
+    )
     return "\n".join(lines)
 
 
@@ -122,13 +134,23 @@ def render_source(row):
     if row.get("index_url"):
         lines.append(f"- **Index a lire avant d'installer :** {row['index_url']}")
     if row.get("install_pattern"):
-        lines.append(f"- **Motif d'installation :**\n```bash\n{row['install_pattern']}\n```")
+        pattern = row["install_pattern"]
+        # Ne mettre en bloc shell que ce qui est reellement une commande, sinon
+        # une consigne du type "inserer dans Framer" se lit comme un truc a coller
+        # dans un terminal.
+        if pattern.split(" ", 1)[0] in SHELL_COMMANDS:
+            lines.append(f"- **Motif d'installation :**\n```bash\n{pattern}\n```")
+        else:
+            lines.append(f"- **Mode d'emploi :** {pattern}")
     if row.get("tags"):
         lines.append(f"- **Tags :** {', '.join(multi(row, 'tags'))}")
     if row.get("notes"):
         lines.append(f"- **Notes :** {row['notes']}")
-    if row.get("last_verified"):
-        lines.append(f"- **Verifie le :** {row['last_verified']}")
+    lines.append(
+        f"- **Verifie le :** {row['last_verified']}"
+        if row.get("last_verified")
+        else "- **Verifie le :** JAMAIS — ressource non verifiee, controler avant usage"
+    )
     return "\n".join(lines)
 
 

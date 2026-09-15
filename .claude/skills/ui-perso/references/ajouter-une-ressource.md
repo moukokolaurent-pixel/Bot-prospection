@@ -29,10 +29,21 @@ Memes conventions, plus :
 
 | Colonne | Contenu |
 |---|---|
+| `kind` | `shadcn-registry-item` ou `framer-module` — decide de la procedure d'installation |
 | `source_id` | `id` de la ligne correspondante dans `sources.csv` |
-| `category` | `hero-effect`, `navigation`, `form`, `data-display`, `background`, `transition`... |
-| `install` | la commande **complete et exacte**, pas un motif |
-| `dependencies` | dependances npm reelles, lues dans le JSON du registre |
+| `category` | `hero-effect`, `navigation`, `form`, `data-display`, `background`, `scroll-effect`, `bento-grid`... |
+| `url` | l'URL de la ressource elle-meme, toujours renseignee |
+| `install` | la commande **complete et exacte**, ou **vide** si la ressource ne s'installe pas par commande |
+| `dependencies` | dependances reelles, lues dans le JSON du registre — jamais devinees |
+
+**`install` vide n'est pas un oubli, c'est une information.** `search.py` affiche alors
+« Installation : aucune commande — voir Notes ». Une ressource Framer, un lien d'inspiration
+ou un composant a recopier a la main n'ont pas de commande : laisser le champ vide plutot que
+d'inventer un `npx` autour de l'`url`.
+
+**`last_verified` vide n'est pas un oubli non plus.** Il signale que le contenu n'a jamais ete
+lu, et `search.py` l'affiche en toutes lettres (« Verifie le : JAMAIS »). Ne le remplir qu'apres
+avoir reellement ouvert la ressource.
 
 ## Trouver le nom exact d'un item
 
