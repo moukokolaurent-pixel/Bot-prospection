@@ -5,9 +5,10 @@
 # Le lien, pas une copie : vous editez les CSV ici, vous commitez ici, et
 # c'est a jour partout immediatement. Une copie divergerait au premier ajout.
 #
-#   ./install.sh            installe (ou repare) le lien
-#   ./install.sh --status   dit ou on en est, ne touche a rien
-#   ./install.sh --remove   retire le lien
+#   ./install.sh             installe (ou repare) le lien
+#   ./install.sh --status    dit ou on en est, ne touche a rien
+#   ./install.sh --remove    retire le lien
+#   ./install.sh --claude-md ajoute la regle de consultation a ~/.claude/CLAUDE.md
 #
 set -euo pipefail
 
@@ -58,9 +59,46 @@ install() {
   echo "Le skill sera charge au prochain demarrage de Claude Code."
 }
 
+# Le declenchement d'un skill depend de la formulation de la demande. Une regle
+# dans CLAUDE.md est lue a chaque session, sans condition : c'est le seul moyen
+# fiable de garantir que le catalogue soit consulte.
+claude_md() {
+  local file="${CLAUDE_MD:-$HOME/.claude/CLAUDE.md}"
+  local marker="<!-- ui-perso -->"
+
+  if [ -f "$file" ] && grep -qF "$marker" "$file"; then
+    echo "Deja present dans $file — rien a faire."
+    return 0
+  fi
+
+  mkdir -p "$(dirname "$file")"
+  [ -f "$file" ] && cp "$file" "$file.bak.$(date +%Y%m%d%H%M%S)" && echo "Sauvegarde : $file.bak.*"
+
+  cat >> "$file" <<'BLOC'
+
+<!-- ui-perso -->
+## Ressources UI
+
+Avant toute tache de design ou d'interface — page, composant, canvas Claude Design,
+artboard, Artifact — consulter le catalogue perso :
+
+    python3 ~/.claude/skills/ui-perso/scripts/search.py "<ce que je cherche>"
+
+Verifier qu'une ressource vettee existe avant d'en ecrire une depuis zero.
+Respecter la matrice cible x kind du SKILL.md : un framer-module ne fonctionne pas
+dans un artboard, un item shadcn n'y est pas installable mais son effet se
+reimplemente via cdnjs.
+<!-- /ui-perso -->
+BLOC
+
+  echo "Regle ajoutee a $file"
+  echo "Elle sera lue des la prochaine session."
+}
+
 case "${1:-}" in
-  --status) status ;;
-  --remove) remove ;;
-  "")       install ;;
-  *)        echo "Usage: $0 [--status|--remove]" >&2; exit 2 ;;
+  --status)    status ;;
+  --remove)    remove ;;
+  --claude-md) claude_md ;;
+  "")          install ;;
+  *)           echo "Usage: $0 [--status|--remove|--claude-md]" >&2; exit 2 ;;
 esac

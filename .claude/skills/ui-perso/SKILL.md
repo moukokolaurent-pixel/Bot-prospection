@@ -121,7 +121,9 @@ ui-perso/
 │   └── framer-preflight.py           un module Framer marche-t-il hors de Framer ?
 ├── references/
 │   ├── ajouter-une-ressource.md      conventions de saisie et re-verification
-│   └── framer-modules.md             les deux chemins pour faire marcher un module Framer
+│   ├── framer-modules.md             les deux chemins pour faire marcher un module Framer
+│   ├── claude-design.md              ce qui marche ou non dans un artboard
+│   └── piloter-depuis-le-prompt.md   comment demander une ressource precise
 └── snippets/
     └── framer-module-in-next.tsx     wrapper client pour module Framer distant
 ```

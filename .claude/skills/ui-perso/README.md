@@ -28,11 +28,22 @@ copie : vous éditez les CSV ici, vous commitez ici, et c'est à jour dans tous 
 immédiatement.
 
 ```bash
-./install.sh --status   # où on en est
-./install.sh --remove   # retirer le lien
+./install.sh --status      # où on en est
+./install.sh --remove      # retirer le lien
+./install.sh --claude-md   # garantir que le catalogue soit consulté (voir ci-dessous)
 ```
 
 Le skill est chargé au démarrage suivant de Claude Code.
+
+### Le rendre fiable
+
+Le déclenchement d'un skill dépend de la formulation de la demande. Pour que le catalogue soit
+consulté **à chaque fois**, `./install.sh --claude-md` ajoute une règle à `~/.claude/CLAUDE.md`,
+lu sans condition à chaque session. Le fichier existant est sauvegardé, et l'opération est
+idempotente.
+
+Voir `references/piloter-depuis-le-prompt.md` pour les formulations qui marchent — et celles
+qui ne marchent pas.
 
 ## Utilisation
 
